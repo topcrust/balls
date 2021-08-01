@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Shock Megademo part 7</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="ZX Spectrum Shock Megademo (part 7) by E.S.I. (1992). HTML, CSS, JS, SVG, Canvas." />
+<link rel="canonical" href="http://topcrust.ru/balls.html">
+
+<style type="text/css">
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+canvas {
+	animation: zchange 0.12s steps(6, jump-none) infinite;
+	background: #fff;
+	position: absolute;
+}
+
+canvas:nth-child(1) { animation-delay: -100ms; }
+canvas:nth-child(2) { animation-delay: -80ms; }
+canvas:nth-child(3) { animation-delay: -60ms; }
+canvas:nth-child(4) { animation-delay: -40ms; }
+canvas:nth-child(5) { animation-delay: -20ms; }
+canvas:nth-child(6) { animation-delay:  0; }
+
+@keyframes zchange {
+	from { z-index: 1; }
+	  to { z-index: 6; }
+}
+</style>
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='gradient' cx='20%25' cy='20%25' r='100%25' fx='30%25' fy='30%25'%3E%3Cstop stop-color='%23fff' offset='0'/%3E%3Cstop stop-color='%23666' offset='50%25'/%3E%3Cstop stop-color='%23000' offset='100%25'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' stroke-width='2' stroke='%23fff' fill='url(%23gradient)'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<canvas></canvas>
+<canvas></canvas>
+<canvas></canvas>
+<canvas></canvas>
+<canvas></canvas>
+<canvas></canvas>
+
+<script type="text/javascript">
+;(function(){
+
+var win_w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+var win_h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+var ball_size = ~~(Math.max(win_h, win_w) * 0.08);
+
+var img_svg = document.querySelector('link[rel="icon"]').href;
+var img_2d = new Image();
+img_2d.src = img_svg.replace(",%3Csvg ", ",%3Csvg width='" + ball_size + "' height='" + ball_size + "' ");
+
+var ctx = [],
+	coords_x = [],
+	coords_y = [],
+	coords_x_key = 0,
+	coords_y_key = 0;
+
+make_coords();
+
+var els = document.querySelectorAll('canvas');
+for(var i = els.length; i--;) {
+	els[i].num = i;
+	els[i].width = win_w;
+	els[i].height = win_h;
+	ctx[i] = els[i].getContext('2d');
+}
+
+document.addEventListener('animationiteration', function(e) {
+if(e.animationName === 'zchange') {
+	ctx[ e.target.num ].drawImage(img_2d, coords_x[ coords_x_key ], coords_y[ coords_y_key ]);
+	coords_x_key = (coords_x_key + 1) % coords_x.length;
+	coords_y_key = (coords_y_key + 1) % coords_y.length;
+}
+});
+
+function make_coords() {
+	var x_count, y_count, dx, dy, x_formula, y_formula, fx = window.location.hash.match(/#fx(\d+)/);
+	fx = fx ? +fx[1] : ~~(Math.random() * 8) + 1;
+
+	switch(fx) {
+
+	case 1:
+		x_count = 577;
+		y_count = x_count / 2 + 3;
+		dx = 2 * Math.PI / x_count;
+		dy = 2 * Math.PI / y_count;
+		x_formula = function(a, b) {
+			return Math.round(b * (2 + Math.cos(a) + Math.cos(3 * a)) / 4);
+		};
+		y_formula = function(a, b) {
+			return Math.round(b * (1 + Math.sin(a)) / 2);
+		};
+	break;
+
+	case 2:
+		x_count = 1001;
+		y_count = x_count + 5;
+		dx = 8 * Math.PI / x_count;
+		dy = 8 * Math.PI / y_count;
+		x_formula = function(a, b) {
+			var r = Math.sin(a * 3 / 4);
+			return Math.round(b * (1 + r * Math.cos(a)) / 2);
+		};
+		y_formula = function(a, b) {
+			var r = Math.sin(a*3/4);
+			return Math.round(b * (1 + r * Math.sin(a)) / 2);
+		};
+	break;
+
+	case 3:
+		x_count = 301;
+		y_count = x_count * 0.75 + 7;
+		dx = 2 * Math.PI / x_count;
+		dy = 2 * Math.PI / y_count;
+		x_formula = function(a, b) {
+			return Math.round(b * (1 + Math.sin(a)) / 2);
+		};
+		y_formula = x_formula;
+	break;
+
+	case 4: // triangle
+		x_count = 201;
+		y_count = (x_count + 7) * 2;
+		dx = 1 / x_count;
+		dy = 1 / y_count;
+		x_formula = function(a, b) {
+			var c = (a < 0.5) ? a * 2 : (1 - a) * 2;
+			return Math.round(b * c);
+		};
+		y_formula = x_formula;
+	break;
+
+	case 5: // eight
+		x_count = 421;
+		y_count = x_count / 2 + 3;
+		dx = 2 * Math.PI / x_count;
+		dy = 2 * Math.PI / y_count;
+		x_formula = function(a, b) {
+			return Math.round(b * (1 + Math.sin(a)) / 2);
+		};
+		y_formula = x_formula;
+	break;
+
+	case 6: // smile
+		x_count = 381;
+		y_count = x_count + 7;
+		dx = 2 * Math.PI / x_count;
+		dy = 2 * Math.PI / y_count;
+		x_formula = function(a, b) {
+			return Math.round(b * (1 + Math.cos(a)) / 2);
+		};
+		y_formula = function(a, b) {
+			return Math.round(b * Math.abs(Math.sin(a)));
+		};
+	break;
+
+	case 7: // pillow
+		x_count = 381;
+		y_count = x_count + 7;
+		dx = 2 * Math.PI / x_count;
+		dy = 2 * Math.PI / y_count;
+		x_formula = function(a, b) {
+			return Math.round(b * (1 + Math.pow(Math.sin(a), 3)) / 2);
+		};
+		y_formula = function(a, b) {
+			return Math.round(b * (1 + Math.pow(Math.cos(a), 3)) / 2);
+		};
+	break;
+
+	default: // circle
+		x_count = 301;
+		y_count = x_count + 7;
+		dx = 2 * Math.PI / x_count;
+		dy = 2 * Math.PI / y_count;
+		x_formula = function(a, b) {
+			return Math.round(b * (1 + Math.sin(a)) / 2);
+		};
+		y_formula = function(a, b) {
+			return Math.round(b * (1 + Math.cos(a)) / 2);
+		};
+	break;
+
+	}
+
+	for(var i = Math.max(x_count, y_count); i--;) {
+		if(i < x_count) coords_x.push( x_formula(i * dx, win_w - ball_size) );
+		if(i < y_count) coords_y.push( y_formula(i * dy, win_h - ball_size) );
+	}
+
+}
+
+})();
+</script>
+</body>
+</html><!-- All those moments will be lost in time, like tears in rain... -->
